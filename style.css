@@ -1,0 +1,67 @@
+/* 画面全体のレイアウト */
+body { 
+    background: #1a1a1a; 
+    margin: 0; 
+    height: 100vh; 
+    width: 100vw;
+    position: relative;
+    overflow: hidden; 
+}
+
+/* スクラッチの外枠（中央固定） */
+.container { 
+    position: absolute; 
+    top: 50%;   
+    left: 50%;  
+    transform: translate(-50%, -50%); 
+    
+    width: 320px; 
+    height: 320px; 
+    background: radial-gradient(circle, #fff700, #ffa500); 
+    border: 10px solid #ffd700; 
+    border-radius: 20px; 
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+}
+
+/* 当たりメッセージの装飾 */
+.result { 
+    position: absolute; 
+    width: 100%; 
+    height: 100%; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+    text-align: center; 
+    z-index: 1; 
+}
+
+.result h1 { 
+    color: #ff0000; 
+    font-size: 2.5rem; 
+    margin: 0; 
+    text-shadow: 2px 2px 0 #fff; 
+    animation: bounce 0.5s infinite alternate; 
+}
+
+.result p { 
+    color: #333; 
+    font-weight: bold; 
+    font-size: 1.2rem; 
+    margin-bottom: 5px; 
+}
+
+@keyframes bounce { 
+    from { transform: scale(1); } 
+    to { transform: scale(1.1); } 
+}
+
+/* スクラッチ膜のCanvas */
+canvas { 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    z-index: 2; 
+    cursor: crosshair; 
+    border-radius: 10px; 
+}
