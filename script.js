@@ -97,6 +97,30 @@ function celebrate() {
     }());
 }
 
+// celebrate関数（紙吹雪）の中に、プロフィール表示を追加します
+function celebrate() {
+    // --- 既存の紙吹雪の演出 ---
+    const duration = 3 * 1000;
+    const end = Date.now() + duration;
+    (function frame() {
+        confetti({ particleCount: 7, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#ffd700', '#ffffff', '#ff0000'] });
+        confetti({ particleCount: 7, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ffd700', '#ffffff', '#ff0000'] });
+        if (Date.now() < end) requestAnimationFrame(frame);
+    }());
+
+    // --- 【追加】LINEのプロフィールを表示する演出 ---
+    liff.getProfile().then(profile => {
+        const resultDiv = document.querySelector('.result');
+        // HTMLの中身を書き換えて、名前と画像を表示
+        resultDiv.innerHTML = `
+            <p style="margin-bottom:10px;">おめでとう！</p>
+            <img src="${profile.pictureUrl}" style="width:60px; border-radius:50%; border:3px solid #fff; box-shadow:0 0 10px rgba(0,0,0,0.3);">
+            <h1 style="font-size:1.5rem; margin-top:10px;">${profile.displayName} さん</h1>
+            <p style="font-size:1.2rem; color:#ff0000;">一等 77777pt！</p>
+        `;
+    }).catch(err => console.error(err));
+}
+
 // イベントリスナー登録
 canvas.addEventListener('mousemove', (e) => { if(e.buttons === 1) scratch(e); });
 canvas.addEventListener('touchmove', (e) => { e.preventDefault(); scratch(e); }, {passive: false});
