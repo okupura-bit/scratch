@@ -1,3 +1,20 @@
+async function initLIFF() {
+    try {
+        await liff.init({ liffId: "あなたのLIFF ID" }); // 管理画面で発行されたID
+        if (!liff.isLoggedIn()) {
+            liff.login(); // ログインしていなければログイン画面へ
+        } else {
+            const profile = await liff.getProfile();
+            console.log("こんにちは、" + profile.displayName + "さん！");
+            // ここで「〇〇さん、くじを引いてね！」と画面に出すことも可能
+        }
+    } catch (err) {
+        console.error("LIFF初期化失敗", err);
+    }
+}
+
+initLIFF(); // 起動時に実行
+
 const canvas = document.getElementById('scratch');
 const ctx = canvas.getContext('2d');
 let isFinished = false;
