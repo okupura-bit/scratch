@@ -86,4 +86,4 @@ function celebrate() {
 canvas.addEventListener('mousemove', (e) => { if(e.buttons === 1) scratch(e); });
 canvas.addEventListener('touchmove', (e) => { e.preventDefault(); scratch(e); }, {passive: false});
 
-init();
+init(); 
