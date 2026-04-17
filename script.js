@@ -1,45 +1,54 @@
-// --- LIFF初期化 ---
-async function initLIFF() {
-    try {
-        await liff.init({ liffId: "2009809258-JBMtGduw" }); // ここを自分のIDに！
-        if (!liff.isLoggedIn()) {
-            liff.login();
-        }
-    } catch (err) {
-        console.error("LIFF初期化失敗", err);
-    }
-}
-
-initLIFF();
-
+// --- 設定 ---
+const LIFF_ID = "あなたのLIFF ID"; 
 const canvas = document.getElementById('scratch');
 const ctx = canvas.getContext('2d');
 let isFinished = false;
 
+// --- 1. 初期化 (高級感のある銀色の質感を出す) ---
 function init() {
-    const grad = ctx.createLinearGradient(0, 0, 320, 320);
-    grad.addColorStop(0, '#adb5bd');
-    grad.addColorStop(0.5, '#dee2e6');
-    grad.addColorStop(1, '#adb5bd');
-    ctx.fillStyle = grad;
+    // 銀色のザラザラ感を出すためにパターンを描画
+    ctx.fillStyle = '#C0C0C0';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // ノイズ（削りカス感）を薄く乗せる
+    for (let i = 0; i < 500; i++) {
+        ctx.fillStyle = 'rgba(255,255,255,0.2)';
+        ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 2, 2);
+    }
+    
+    // 「ここを削ってね！」という文字を入れる
+    ctx.font = "bold 20px 'Hiragino Kaku Gothic ProN'";
+    ctx.fillStyle = "#888";
+    ctx.textAlign = "center";
+    ctx.fillText("ここをこすってね！", canvas.width / 2, canvas.height / 2);
 }
 
+// --- 2. 削る処理 (滑らかさを重視) ---
 function scratch(e) {
     if (isFinished) return;
     const rect = canvas.getBoundingClientRect();
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    
     const x = clientX - rect.left;
     const y = clientY - rect.top;
 
     ctx.globalCompositeOperation = 'destination-out';
     ctx.beginPath();
+    
+    // 筆圧を感じさせるような少しぼかした円で削る
+    const gradient = ctx.createRadialGradient(x, y, 0, x, y, 25);
+    gradient.addColorStop(0, 'rgba(0,0,0,1)');
+    gradient.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = gradient;
+    
     ctx.arc(x, y, 25, 0, Math.PI * 2);
     ctx.fill();
+
     checkScratchPercentage();
 }
 
+// 面積チェックロジックは前回同様
 function checkScratchPercentage() {
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const pixels = imageData.data;
@@ -49,41 +58,46 @@ function checkScratchPercentage() {
     }
     const percentage = (transparentPixels / (canvas.width * canvas.height)) * 100;
     
-    if (percentage > 40 && !isFinished) {
+    if (percentage > 45 && !isFinished) {
         isFinished = true;
-        canvas.style.transition = 'opacity 1s';
+        canvas.style.transition = 'opacity 0.8s ease-out, transform 0.8s ease-out';
         canvas.style.opacity = '0'; 
-        celebrate(); // ここで下の関数を呼ぶ
+        canvas.style.transform = 'scale(1.2)'; // 少し膨らんで消える演出
+        celebrate();
     }
 }
 
-// お祝い演出（紙吹雪 ＋ プロフィール表示）
-// 関数は1つにまとめます！
-function celebrate() {
-    // 1. 紙吹雪
-    const duration = 3 * 1000;
-    const end = Date.now() + duration;
-    (function frame() {
-        confetti({ particleCount: 7, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#ffd700', '#ffffff', '#ff0000'] });
-        confetti({ particleCount: 7, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ffd700', '#ffffff', '#ff0000'] });
-        if (Date.now() < end) requestAnimationFrame(frame);
-    }());
+// --- 3. お祝い演出 (LINEプロフィールをリッチに表示) ---
+async function celebrate() {
+    // 紙吹雪
+    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
 
-    // 2. LINEプロフィール取得と画面書き換え
-    liff.getProfile().then(profile => {
+    try {
+        const profile = await liff.getProfile();
         const resultDiv = document.querySelector('.result');
+        
+        // 結果画面をリッチに書き換え
+        resultDiv.style.opacity = '1';
         resultDiv.innerHTML = `
-            <p style="margin-bottom:10px;">おめでとう！</p>
-            <img src="${profile.pictureUrl}" style="width:80px; border-radius:50%; border:4px solid #fff; box-shadow:0 0 15px rgba(0,0,0,0.2);">
-            <h1 style="font-size:1.8rem; margin:10px 0;">${profile.displayName} さん</h1>
-            <p style="font-size:1.2rem; color:#ff0000; font-weight:bold;">一等 77777pt！</p>
+            <div style="animation: bounce 1s infinite alternate;">
+                <p style="color: #ff0000; font-weight: bold; font-size: 1.2rem;">CONGRATULATIONS!</p>
+                <img src="${profile.pictureUrl}" style="width:100px; border-radius:50%; border:5px solid #ffd700; box-shadow: 0 0 20px rgba(255,215,0,0.5);">
+                <h2 style="margin: 10px 0;">${profile.displayName} 様</h2>
+                <div style="background: linear-gradient(45deg, #ffd700, #ff8c00); color: white; padding: 10px; border-radius: 10px; display: inline-block;">
+                    <span style="font-size: 2rem; font-weight: bold;">一等当選</span>
+                </div>
+            </div>
         `;
-    }).catch(err => {
-        console.error("プロフィール取得失敗", err);
-    });
+    } catch (err) {
+        console.error(err);
+    }
 }
+
+// イベント・初期化処理は前回同様
+liff.init({ liffId: LIFF_ID }).then(() => {
+    if (!liff.isLoggedIn()) liff.login();
+});
 
 canvas.addEventListener('mousemove', (e) => { if(e.buttons === 1) scratch(e); });
 canvas.addEventListener('touchmove', (e) => { e.preventDefault(); scratch(e); }, {passive: false});
-
-init(); 
+init();

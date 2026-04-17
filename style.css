@@ -65,3 +65,24 @@ canvas {
     cursor: crosshair; 
     border-radius: 10px; 
 }
+
+/* 結果表示のコンテナ */
+.result {
+    transition: all 0.5s ease;
+    text-align: center;
+}
+
+/* ポヨンポヨンと跳ねるアニメーション */
+@keyframes bounce {
+    from { transform: translateY(0); }
+    to { transform: translateY(-10px); }
+}
+
+/* スクラッチの外枠をカード風に */
+.container {
+    background: #fff;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    border: 1px solid #eee;
+}
